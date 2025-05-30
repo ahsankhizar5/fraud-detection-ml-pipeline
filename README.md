@@ -53,13 +53,11 @@ python fraud_detection.py
 
 ## 🛠️ Tech Stack
 
--*Python 3
--*Pandas
--*Scikit-learn
--*imbalanced-learn (SMOTE)
--*RandomForestClassifier
-
----
+- **Python 3**
+- **Pandas**
+- **Scikit-learn**
+- **imbalanced-learn (SMOTE)**
+- **RandomForestClassifier**
 
 ## 📊 Evaluation Metrics
 
