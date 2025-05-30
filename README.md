@@ -21,6 +21,18 @@ Detect fraudulent credit card transactions with high accuracy using SMOTE, Rando
 
 ---
 
+## Dataset
+
+This project uses the **Credit Card Fraud Detection** dataset from [Kaggle](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud).
+
+To use it:
+
+1. Download the dataset manually from the link above.
+2. Extract the `creditcard.csv` file.
+3. Place it in the project root directory.
+
+> Note: The dataset is not included in this repository due to GitHub's file size limitations.
+
 ## 🚀 Getting Started
 
 Clone the repo and run the script locally.
