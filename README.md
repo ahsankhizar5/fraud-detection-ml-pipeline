@@ -1,6 +1,6 @@
 # 🕵️‍♂️ Fraud Detection System using Machine Learning
 
-Detect fraudulent credit card transactions with high accuracy using SMOTE, Random Forest, and a custom CLI interface.
+Detect fraudulent credit card transactions with high accuracy using SMOTE, Random Forest, and a modern web interface.
 
 ---
 
@@ -16,7 +16,12 @@ Detect fraudulent credit card transactions with high accuracy using SMOTE, Rando
 - ⚖️ SMOTE oversampling to handle class imbalance
 - 🌲 Random Forest model for fraud classification
 - 📈 Performance metrics: Accuracy, Precision, Recall, F1-score
-- 🧪 CLI interface for testing your own transactions
+- 🖥️ **Modern Web Interface** with responsive design
+- 🎨 **Professional UI** with Bootstrap styling
+- 📊 **Interactive Dashboard** for model training and testing
+- 🔍 **Real-time Predictions** with probability scores
+- 📱 **Mobile-friendly** responsive layout
+- 🧪 CLI interface for testing your own transactions (legacy)
 - ✅ Clean, script-based structure (no notebooks)
 
 ---
@@ -35,6 +40,27 @@ To use it:
 
 ## 🚀 Getting Started
 
+### Web Interface (Recommended)
+
+1. **Clone and setup:**
+```bash
+# Clone the repo
+git clone https://github.com/ahsankhizar5/fraud-detection-ml-pipeline.git
+cd fraud-detection-ml-pipeline
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the web application
+python app.py
+```
+
+2. **Open your browser:**
+   - Navigate to `http://localhost:5000`
+   - Use the intuitive web interface to train models and test transactions
+
+### Command Line Interface (Legacy)
+
 Clone the repo and run the script locally.
 
 ```bash
@@ -47,7 +73,7 @@ pip install pandas scikit-learn imbalanced-learn
 
 # Run the detection script
 python fraud_detection.py
-````
+```
 
 ---
 
@@ -58,6 +84,10 @@ python fraud_detection.py
 - **Scikit-learn**
 - **imbalanced-learn (SMOTE)**
 - **RandomForestClassifier**
+- **Flask** (Web Framework)
+- **Bootstrap 5** (UI Framework)
+- **HTML/CSS/JavaScript** (Frontend)
+- **Font Awesome** (Icons)
 
 ## 📊 Evaluation Metrics
 
@@ -76,10 +106,43 @@ python fraud_detection.py
 ```
 fraud-detection-ml-pipeline/
 │
-├── creditcard.csv           # Dataset file
-├── fraud_detection.py       # Core training + testing pipeline
-└── README.md                # You're here!
+├── creditcard.csv              # Dataset file
+├── fraud_detection.py          # Core training + testing pipeline (CLI)
+├── app.py                      # Flask web application
+├── requirements.txt            # Python dependencies
+├── templates/                  # HTML templates
+│   ├── base.html              # Base template with navigation
+│   ├── index.html             # Home page
+│   ├── train.html             # Model training page
+│   └── predict.html           # Transaction testing page
+├── static/                     # Static assets
+│   ├── css/
+│   │   └── style.css          # Custom CSS styles
+│   └── js/
+│       └── main.js            # JavaScript functionality
+└── README.md                   # You're here!
 ```
+
+## 🖥️ Web Interface Features
+
+### 🏠 Home Dashboard
+- Model status overview
+- Performance metrics display  
+- Quick start guide
+- Feature highlights
+
+### 🧠 Model Training
+- Interactive training interface
+- Real-time progress updates
+- Performance metrics visualization
+- Confusion matrix display
+
+### 🔍 Transaction Testing
+- User-friendly form interface
+- Real-time fraud prediction
+- Probability score breakdown
+- Risk assessment levels
+- Quick test examples
 
 ---
 

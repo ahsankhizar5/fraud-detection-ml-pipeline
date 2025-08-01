@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Fraud Detection System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="hero-section text-center py-5 rounded bg-gradient">
+            <h1 class="display-4 text-white mb-3">
+                <i class="fas fa-shield-alt text-warning"></i>
+                Fraud Detection System
+            </h1>
+            <p class="lead text-white mb-4">
+                Detect fraudulent credit card transactions with high accuracy using Machine Learning
+            </p>
+            {% if model_trained %}
+                <div class="alert alert-success d-inline-block">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Model is trained and ready for predictions!
+                </div>
+            {% else %}
+                <div class="alert alert-warning d-inline-block">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Model not trained yet. Train the model to start making predictions.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Feature Cards -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-brain fa-3x text-primary"></i>
+                </div>
+                <h4 class="card-title">Machine Learning</h4>
+                <p class="card-text">
+                    Uses Random Forest algorithm with SMOTE oversampling to handle class imbalance and achieve high accuracy.
+                </p>
+                <a href="{{ url_for('train_page') }}" class="btn btn-primary">
+                    <i class="fas fa-cog me-1"></i>Train Model
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-search fa-3x text-success"></i>
+                </div>
+                <h4 class="card-title">Real-time Detection</h4>
+                <p class="card-text">
+                    Test individual transactions instantly and get fraud probability scores with detailed analysis.
+                </p>
+                <a href="{{ url_for('predict_page') }}" class="btn btn-success {% if not model_trained %}disabled{% endif %}">
+                    <i class="fas fa-play me-1"></i>Test Transaction
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-chart-line fa-3x text-info"></i>
+                </div>
+                <h4 class="card-title">Performance Metrics</h4>
+                <p class="card-text">
+                    View detailed model performance including accuracy, precision, recall, and F1-score metrics.
+                </p>
+                <button class="btn btn-info" onclick="showMetrics()" {% if not model_trained %}disabled{% endif %}>
+                    <i class="fas fa-chart-bar me-1"></i>View Metrics
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Performance Section -->
+{% if model_trained and metrics %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Model Performance
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-primary">{{ "%.4f"|format(metrics.accuracy) }}</h3>
+                        <p class="text-muted">Accuracy</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-success">{{ "%.4f"|format(metrics.classification_report['1']['precision']) }}</h3>
+                        <p class="text-muted">Precision (Fraud)</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-warning">{{ "%.4f"|format(metrics.classification_report['1']['recall']) }}</h3>
+                        <p class="text-muted">Recall (Fraud)</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-info">{{ "%.4f"|format(metrics.classification_report['1']['f1-score']) }}</h3>
+                        <p class="text-muted">F1-Score (Fraud)</p>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    Last trained: {{ metrics.timestamp }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Start Guide -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-rocket me-2"></i>
+                    Quick Start Guide
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <h5>Train the Model</h5>
+                            <p>Load the credit card dataset and train the fraud detection model using Random Forest with SMOTE.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <h5>Test Transactions</h5>
+                            <p>Input transaction details to get instant fraud detection results with probability scores.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <h5>View Results</h5>
+                            <p>Analyze the predictions and model performance metrics to ensure optimal fraud detection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showMetrics() {
+    // Scroll to metrics section
+    document.querySelector('.card-header.bg-info').scrollIntoView({ 
+        behavior: 'smooth' 
+    });
+}
+</script>
+{% endblock %}

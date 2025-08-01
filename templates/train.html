@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Train Model - Fraud Detection System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-brain text-primary me-2"></i>
+                Train Model
+            </h2>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Home
+            </a>
+        </div>
+        <p class="text-muted">Train the fraud detection model using the credit card dataset</p>
+    </div>
+</div>
+
+<!-- Training Interface -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Model Training
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Training Status -->
+                <div id="training-status" class="alert alert-info d-none">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div>
+                            <strong>Training in progress...</strong>
+                            <div class="small">This may take a few minutes. Please don't close this page.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Form -->
+                <form id="training-form">
+                    <div class="mb-4">
+                        <h5><i class="fas fa-info-circle me-2"></i>Training Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <strong>Dataset:</strong> Credit Card Transactions
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <strong>Algorithm:</strong> Random Forest
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <strong>Balancing:</strong> SMOTE Oversampling
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <strong>Test Split:</strong> 20%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play me-2"></i>
+                            Start Training
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Training Results -->
+                <div id="training-results" class="mt-4 d-none">
+                    <hr>
+                    <h5><i class="fas fa-chart-bar me-2"></i>Training Results</h5>
+                    
+                    <!-- Success Message -->
+                    <div id="success-message" class="alert alert-success d-none">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Training completed successfully!</strong>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="error-message" class="alert alert-danger d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Training failed:</strong> <span id="error-text"></span>
+                    </div>
+
+                    <!-- Metrics Display -->
+                    <div id="metrics-display" class="d-none">
+                        <div class="row mb-3">
+                            <div class="col-md-3 text-center">
+                                <div class="metric-card">
+                                    <h3 id="accuracy-value" class="text-primary">-</h3>
+                                    <p class="text-muted mb-0">Accuracy</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="metric-card">
+                                    <h3 id="precision-value" class="text-success">-</h3>
+                                    <p class="text-muted mb-0">Precision</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="metric-card">
+                                    <h3 id="recall-value" class="text-warning">-</h3>
+                                    <p class="text-muted mb-0">Recall</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="metric-card">
+                                    <h3 id="f1-value" class="text-info">-</h3>
+                                    <p class="text-muted mb-0">F1-Score</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confusion Matrix -->
+                        <div class="row">
+                            <div class="col-md-6 mx-auto">
+                                <h6>Confusion Matrix</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>Predicted Non-Fraud</th>
+                                                <th>Predicted Fraud</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Actual Non-Fraud</th>
+                                                <td id="tn-value" class="bg-light">-</td>
+                                                <td id="fp-value" class="bg-light">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Actual Fraud</th>
+                                                <td id="fn-value" class="bg-light">-</td>
+                                                <td id="tp-value" class="bg-light">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Next Steps -->
+                        <div class="mt-4">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Next Steps</h6>
+                                <p class="mb-2">Your model is now ready! You can:</p>
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <a href="{{ url_for('predict_page') }}" class="btn btn-success">
+                                        <i class="fas fa-search me-1"></i>Test Transactions
+                                    </a>
+                                    <a href="{{ url_for('home') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-home me-1"></i>Go to Home
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requirements Note -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6><i class="fas fa-info-circle me-2"></i>Requirements</h6>
+            <p class="mb-0">
+                Make sure the <code>creditcard.csv</code> file is present in the project directory. 
+                The training process will use a sample of the data for faster processing in the web interface.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('training-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show training status
+    document.getElementById('training-status').classList.remove('d-none');
+    
+    // Disable form
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Training...';
+    
+    // Make API call
+    fetch('/api/train', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide training status
+        document.getElementById('training-status').classList.add('d-none');
+        
+        // Show results section
+        document.getElementById('training-results').classList.remove('d-none');
+        
+        if (data.status === 'success') {
+            // Show success message
+            document.getElementById('success-message').classList.remove('d-none');
+            
+            // Display metrics
+            displayMetrics(data.metrics);
+            
+            // Update button
+            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Training Complete';
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-success');
+        } else {
+            // Show error message
+            document.getElementById('error-message').classList.remove('d-none');
+            document.getElementById('error-text').textContent = data.error || 'Unknown error occurred';
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-play me-2"></i>Start Training';
+        }
+    })
+    .catch(error => {
+        console.error('Training error:', error);
+        
+        // Hide training status
+        document.getElementById('training-status').classList.add('d-none');
+        
+        // Show error
+        document.getElementById('training-results').classList.remove('d-none');
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-text').textContent = 'Network error occurred';
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-play me-2"></i>Start Training';
+    });
+});
+
+function displayMetrics(metrics) {
+    // Show metrics display
+    document.getElementById('metrics-display').classList.remove('d-none');
+    
+    // Update metric values
+    document.getElementById('accuracy-value').textContent = metrics.accuracy.toFixed(4);
+    document.getElementById('precision-value').textContent = metrics.classification_report['1']['precision'].toFixed(4);
+    document.getElementById('recall-value').textContent = metrics.classification_report['1']['recall'].toFixed(4);
+    document.getElementById('f1-value').textContent = metrics.classification_report['1']['f1-score'].toFixed(4);
+    
+    // Update confusion matrix
+    const cm = metrics.confusion_matrix;
+    document.getElementById('tn-value').textContent = cm[0][0];
+    document.getElementById('fp-value').textContent = cm[0][1];
+    document.getElementById('fn-value').textContent = cm[1][0];
+    document.getElementById('tp-value').textContent = cm[1][1];
+}
+</script>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Test Transaction - Fraud Detection System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-search text-success me-2"></i>
+                Test Transaction
+            </h2>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Home
+            </a>
+        </div>
+        <p class="text-muted">Enter transaction details to detect potential fraud</p>
+    </div>
+</div>
+
+{% if not model_trained %}
+<!-- Model Not Trained Warning -->
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Model Not Trained</h5>
+            <p class="mb-3">The fraud detection model hasn't been trained yet. You need to train the model before making predictions.</p>
+            <a href="{{ url_for('train_page') }}" class="btn btn-primary">
+                <i class="fas fa-brain me-1"></i>Train Model First
+            </a>
+        </div>
+    </div>
+</div>
+{% else %}
+
+<!-- Prediction Interface -->
+<div class="row">
+    <div class="col-lg-6">
+        <!-- Input Form -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Transaction Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <form id="prediction-form">
+                    <div class="mb-3">
+                        <label for="time" class="form-label">
+                            <i class="fas fa-clock me-1"></i>Time (seconds since first transaction)
+                        </label>
+                        <input type="number" class="form-control" id="time" name="time" 
+                               step="0.01" value="0" required>
+                        <div class="form-text">
+                            Time elapsed since the first transaction in the dataset
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">
+                            <i class="fas fa-dollar-sign me-1"></i>Transaction Amount
+                        </label>
+                        <input type="number" class="form-control" id="amount" name="amount" 
+                               step="0.01" min="0" value="100.00" required>
+                        <div class="form-text">
+                            Transaction amount in dollars
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Note:</strong> This simplified interface uses only Time and Amount features. 
+                            In a production system, all 30 features would be collected for more accurate predictions.
+                        </small>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-search me-2"></i>
+                            Analyze Transaction
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Quick Test Examples -->
+                <div class="mt-4">
+                    <h6>Quick Test Examples:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="setExample(0, 1.99)">
+                            Small Purchase
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="setExample(3600, 250.00)">
+                            Medium Purchase
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="setExample(7200, 1500.00)">
+                            Large Purchase
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="setExample(86400, 5000.00)">
+                            Suspicious Amount
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <!-- Prediction Results -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Prediction Results
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Loading State -->
+                <div id="loading-state" class="text-center d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Analyzing...</span>
+                    </div>
+                    <p class="mt-2">Analyzing transaction...</p>
+                </div>
+
+                <!-- Initial State -->
+                <div id="initial-state" class="text-center text-muted">
+                    <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                    <p>Enter transaction details and click "Analyze Transaction" to see the prediction results.</p>
+                </div>
+
+                <!-- Results -->
+                <div id="prediction-results" class="d-none">
+                    <!-- Prediction Badge -->
+                    <div class="text-center mb-4">
+                        <div id="prediction-badge" class="badge badge-large">
+                            <i id="prediction-icon" class="fas me-2"></i>
+                            <span id="prediction-text"></span>
+                        </div>
+                    </div>
+
+                    <!-- Probability Bars -->
+                    <div class="mb-4">
+                        <h6>Probability Breakdown:</h6>
+                        
+                        <!-- Legitimate Probability -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Legitimate
+                                </span>
+                                <span id="legitimate-percent" class="fw-bold">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div id="legitimate-bar" class="progress-bar bg-success" 
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Fraud Probability -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-danger">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Fraudulent
+                                </span>
+                                <span id="fraud-percent" class="fw-bold">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div id="fraud-bar" class="progress-bar bg-danger" 
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Assessment -->
+                    <div id="risk-assessment" class="alert">
+                        <h6><i class="fas fa-shield-alt me-2"></i>Risk Assessment</h6>
+                        <p id="risk-text" class="mb-0"></p>
+                    </div>
+
+                    <!-- Transaction Summary -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6>Transaction Summary:</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Time:</small>
+                                    <div id="summary-time" class="fw-bold">-</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Amount:</small>
+                                    <div id="summary-amount" class="fw-bold">-</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                Analyzed at: <span id="analysis-time">-</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="alert alert-danger d-none">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Prediction Error</h6>
+                    <p id="error-message" class="mb-0">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Information -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    How It Works
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-brain text-primary me-2"></i>Machine Learning Model</h6>
+                        <p class="small">Uses a Random Forest classifier trained on credit card transaction data with SMOTE oversampling for balanced predictions.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-chart-line text-success me-2"></i>Probability Scores</h6>
+                        <p class="small">The model provides probability scores for both legitimate and fraudulent classifications, helping assess confidence levels.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-shield-alt text-warning me-2"></i>Risk Assessment</h6>
+                        <p class="small">Based on the fraud probability, the system provides risk levels and recommendations for transaction handling.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set example values
+function setExample(time, amount) {
+    document.getElementById('time').value = time;
+    document.getElementById('amount').value = amount.toFixed(2);
+}
+
+// Handle form submission
+document.getElementById('prediction-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    showLoadingState();
+    
+    // Get form data
+    const formData = new FormData(this);
+    const data = {
+        time: parseFloat(formData.get('time')),
+        amount: parseFloat(formData.get('amount'))
+    };
+    
+    // Make prediction request
+    fetch('/api/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showError(result.error);
+        } else {
+            showResults(result, data);
+        }
+    })
+    .catch(error => {
+        console.error('Prediction error:', error);
+        showError('Network error occurred. Please try again.');
+    });
+});
+
+function showLoadingState() {
+    document.getElementById('initial-state').classList.add('d-none');
+    document.getElementById('prediction-results').classList.add('d-none');
+    document.getElementById('error-state').classList.add('d-none');
+    document.getElementById('loading-state').classList.remove('d-none');
+}
+
+function showResults(result, inputData) {
+    // Hide loading state
+    document.getElementById('loading-state').classList.add('d-none');
+    
+    // Show results
+    document.getElementById('prediction-results').classList.remove('d-none');
+    
+    // Update prediction badge
+    const badge = document.getElementById('prediction-badge');
+    const icon = document.getElementById('prediction-icon');
+    const text = document.getElementById('prediction-text');
+    
+    if (result.prediction === 1) {
+        badge.className = 'badge badge-large bg-danger';
+        icon.className = 'fas fa-exclamation-triangle me-2';
+        text.textContent = 'FRAUDULENT TRANSACTION';
+    } else {
+        badge.className = 'badge badge-large bg-success';
+        icon.className = 'fas fa-check-circle me-2';
+        text.textContent = 'LEGITIMATE TRANSACTION';
+    }
+    
+    // Update probability bars
+    const legitPercent = (result.legitimate_probability * 100).toFixed(1);
+    const fraudPercent = (result.fraud_probability * 100).toFixed(1);
+    
+    document.getElementById('legitimate-percent').textContent = legitPercent + '%';
+    document.getElementById('fraud-percent').textContent = fraudPercent + '%';
+    
+    document.getElementById('legitimate-bar').style.width = legitPercent + '%';
+    document.getElementById('fraud-bar').style.width = fraudPercent + '%';
+    
+    // Update risk assessment
+    updateRiskAssessment(result.fraud_probability);
+    
+    // Update transaction summary
+    document.getElementById('summary-time').textContent = inputData.time + ' seconds';
+    document.getElementById('summary-amount').textContent = '$' + inputData.amount.toFixed(2);
+    document.getElementById('analysis-time').textContent = result.timestamp;
+}
+
+function updateRiskAssessment(fraudProb) {
+    const riskAssessment = document.getElementById('risk-assessment');
+    const riskText = document.getElementById('risk-text');
+    
+    if (fraudProb >= 0.7) {
+        riskAssessment.className = 'alert alert-danger';
+        riskText.textContent = 'HIGH RISK: This transaction shows strong indicators of fraud. Immediate review and possible blocking recommended.';
+    } else if (fraudProb >= 0.3) {
+        riskAssessment.className = 'alert alert-warning';
+        riskText.textContent = 'MEDIUM RISK: This transaction has some suspicious characteristics. Additional verification may be warranted.';
+    } else {
+        riskAssessment.className = 'alert alert-success';
+        riskText.textContent = 'LOW RISK: This transaction appears legitimate with normal characteristics.';
+    }
+}
+
+function showError(message) {
+    // Hide loading state
+    document.getElementById('loading-state').classList.add('d-none');
+    
+    // Show error
+    document.getElementById('error-state').classList.remove('d-none');
+    document.getElementById('error-message').textContent = message;
+}
+</script>
+{% endblock %}
