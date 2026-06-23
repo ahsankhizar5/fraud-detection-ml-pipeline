@@ -69,6 +69,8 @@ python fraud_detection.py
 | F1-Score  | 1.00                                        |
 | ROC-AUC   | ✅ (included in model logic, not shown here) |
 
+### Initial experiment results were strong on the selected split, but further validation is needed across unseen data and leakage checks before treating the model as production-ready.
+
 ---
 
 ## 🧾 Project Structure
